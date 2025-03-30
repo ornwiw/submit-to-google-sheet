@@ -13,19 +13,26 @@
   button.textContent = "Sending...";
   button.disabled = true;
   
-  fetch(scriptURL, { method: "POST", body: new FormData(form) })
-    .then((response) => {
-      alert("Form submitted successfully!");
-      form.reset();
-      button.textContent = "Send";
-      button.disabled = false;
-    })
-    .catch((error) => {
-      alert("Error submitting the form!");
-      console.error("Error!", error.message);
-      button.textContent = "Send";
-      button.disabled = false;
-    });
-});
+fetch(scriptURL, { method: "POST", body: new FormData(form) })
+  .then((response) => {
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return response.text(); // หรือ .json() ถ้าสคริปต์ Google Apps Script ส่ง JSON กลับมา
+  })
+  .then(() => {
+    alert("Form submitted successfully!");
+    form.reset();
+  })
+  .catch((error) => {
+    alert("Error submitting the form! Please try again.");
+    console.error("Error!", error);
+  })
+  .finally(() => {
+    button.textContent = "Send";
+    button.disabled = false;
+  });
+  })
+
 
 </script>
