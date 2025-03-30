@@ -9,43 +9,47 @@
 
   form.addEventListener("submit", (e) => {
   e.preventDefault();
-<form name="submit-to-google-sheet">
-  <input name="email" type="email" placeholder="Email" required>
-  <button type="submit">Send</button>
-</form>
+ // แสดงข้อความ "กำลังบันทึกข้อมูล..."
+        Swal.fire({
+            title: 'กำลังบันทึกข้อมูล...',
+            text: 'กรุณารอสักครู่',
+            allowOutsideClick: false,
+            showConfirmButton: false,
+            willOpen: () => {
+                Swal.showLoading();
+            }
+        });
 
-<script>
-  const scriptURL = 'https://script.google.com/macros/s/AKfycbwlKpjVxUeQOxJmKjKly8oBpohWpHDu9lJMm0yEqv0k3a2RZbBud7QbUP_1Aj56Mrso/exec'
-  const form = document.forms['submit-to-google-sheet']
+        fetch(scriptURL, { method: 'POST', body: new FormData(form)})
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('เกิดข้อผิดพลาดในการส่งข้อมูล');
+                }
+                return response.text();
+            })
+            .then(data => {
+                // แสดง SweetAlert แจ้งเตือนสำเร็จ
+                Swal.fire({
+                    position: 'center',
+                    icon: 'success',
+                    title: 'บันทึกข้อมูลเรียบร้อย!',
+                    showConfirmButton: false,
+                    timer: 1500
+                });
 
-  form.addEventListener("submit", (e) => {
-  e.preventDefault();
-  const button = form.querySelector("button");
-  button.textContent = "Sending...";
-  button.disabled = true;
-  
-fetch(scriptURL, { method: "POST", body: new FormData(form) })
-  .then((response) => {
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    return response.text(); // หรือ .json() ถ้าสคริปต์ Google Apps Script ส่ง JSON กลับมา
-  })
-  .then(() => {
-    alert("Form submitted successfully!");
-    form.reset();
-  })
-  .catch((error) => {
-    alert("Error submitting the form! Please try again.");
-    console.error("Error!", error);
-  })
-  .finally(() => {
-    button.textContent = "Send";
-    button.disabled = false;
-  });
-  })
-
-
-</script>
-
+                // รีเซ็ตฟอร์มหลังจากส่งข้อมูลสำเร็จ
+                form.reset();
+            })
+            .catch(error => {
+                // แสดง SweetAlert แจ้งเตือนเมื่อเกิดข้อผิดพลาด
+                Swal.fire({
+                    position: 'center',
+                    icon: 'error',
+                    title: 'เกิดข้อผิดพลาด!',
+                    text: error.message,
+                    showConfirmButton: true
+                });
+                console.error('Error!', error.message);
+            });
+    });
 </script>
